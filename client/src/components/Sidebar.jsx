@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { UserButton } from "@clerk/clerk-react";
 
 const navItems = [
   { path: "/", icon: "🌤️", label: "Today's Vibe" },
@@ -39,8 +40,9 @@ function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="mt-auto px-2">
-        <p className="text-xs text-pink-200">made with 🌸 by you</p>
+      <div className="mt-auto px-2 flex items-center gap-3">
+        <UserButton afterSignOutUrl="/" />
+        <p className="text-xs text-pink-300">your style, your vibe</p>
       </div>
     </div>
   );
