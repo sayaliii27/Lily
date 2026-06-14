@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const moods = [
   {
@@ -141,65 +142,136 @@ const palettes = {
   brunch: ["#FDE68A", "#FCA5A5", "#FBCFE8", "#C4B5FD", "#FFF9C4"],
 };
 
+const tags = {
+  boho: ["flowy fits", "earthy tones", "layered jewellery"],
+  street: ["oversized", "sneakers", "caps"],
+  baddie: ["bodycon", "bold lips", "chrome nails"],
+  beach: ["co-ords", "sun hat", "sandals"],
+  "soft-girl": ["pastel tones", "hair bow", "blush"],
+  cozy: ["oversized knit", "warm tones", "fuzzy socks"],
+  casual: ["denim", "clean basics", "white sneakers"],
+  concert: ["statement look", "glitter", "boots"],
+  formal: ["blazer", "neutral tones", "minimal jewellery"],
+  traditional: ["ethnic wear", "jhumkas", "bindi"],
+  "that-girl": ["matching set", "clean girl", "gold hoops"],
+  "night-out": ["dark tones", "heels", "bold outfit"],
+  campus: ["comfy chic", "tote bag", "fresh fit"],
+  "girl-next-door": ["effortless", "natural look", "simple jewellery"],
+  brunch: ["sundress", "minimal makeup", "cute bag"],
+};
+
 function TodaysVibe() {
   const [selectedMood, setSelectedMood] = useState(null);
+  const [hoveredMood, setHoveredMood] = useState(null);
+
+  const selected = moods.find((m) => m.id === selectedMood);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-700">Good morning 🌤️</h1>
-        <p className="text-gray-400 mt-1">What's your vibe today?</p>
+        <p className="text-gray-400 mt-1">
+          Hover to preview · Click to lock in your vibe
+        </p>
       </div>
 
-      {/* Mood Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {moods.map((mood) => (
-          <button
-            key={mood.id}
-            onClick={() => setSelectedMood(mood.id)}
-            className={`${mood.bg} rounded-3xl p-6 flex flex-col items-center gap-2 border-2 transition-all duration-200 cursor-pointer
-              ${selectedMood === mood.id ? `${mood.active} scale-105 shadow-md` : "border-transparent"}`}
-          >
-            <span className="text-4xl">{mood.emoji}</span>
-            <span className={`text-sm font-semibold ${mood.text}`}>
-              {mood.label}
-            </span>
-          </button>
-        ))}
-      </div>
+      <div className="flex gap-6">
+        {/* Mood Grid */}
+        <div className="flex-1">
+          <div className="grid grid-cols-3 gap-4">
+            {moods.map((mood) => (
+              <div
+                key={mood.id}
+                onClick={() => setSelectedMood(mood.id)}
+                onMouseEnter={() => setHoveredMood(mood.id)}
+                onMouseLeave={() => setHoveredMood(null)}
+                className={`relative ${mood.bg} rounded-3xl p-6 flex flex-col items-center gap-2 border-2 transition-all duration-200 cursor-pointer
+                  ${selectedMood === mood.id ? `${mood.active} scale-105 shadow-md` : "border-transparent hover:scale-105 hover:shadow-sm"}`}
+              >
+                <span className="text-4xl">{mood.emoji}</span>
+                <span className={`text-sm font-semibold ${mood.text}`}>
+                  {mood.label}
+                </span>
 
-      {/* Selected Mood Response */}
-      {selectedMood && (
-        <div className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-pink-100">
-          <p className="text-gray-500 text-sm">Today's vibe is locked in as</p>
-          <p className="text-2xl font-bold text-pink-400 mt-1">
-            {moods.find((m) => m.id === selectedMood).emoji}{" "}
-            {moods.find((m) => m.id === selectedMood).label}
-          </p>
-
-          {/* Color Palette */}
-          <div className="mt-5">
-            <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">
-              Today's Color Palette
-            </p>
-            <div className="flex gap-2">
-              {palettes[selectedMood].map((color, i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full shadow-sm border border-white"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
-            </div>
+                {/* Hover Palette Tooltip */}
+                {hoveredMood === mood.id && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white rounded-2xl px-3 py-2 shadow-lg border border-gray-100 z-10 flex gap-1.5">
+                    {palettes[mood.id].map((color, i) => (
+                      <div
+                        key={i}
+                        className="w-5 h-5 rounded-full border border-white shadow-sm"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-
-          <p className="text-gray-400 text-sm mt-4">
-            ✨ Head to Outfit Studio to style your look!
-          </p>
         </div>
-      )}
+
+        {/* Side Panel */}
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              key={selected.id}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="w-56 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm flex flex-col gap-4 h-fit sticky top-6"
+            >
+              <div className="text-5xl">{selected.emoji}</div>
+              <div>
+                <p className="text-lg font-bold text-gray-700">
+                  {selected.label}
+                </p>
+                <p className="text-xs text-gray-400">today's vibe ✨</p>
+              </div>
+
+              {/* Palette */}
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                  colour palette
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {palettes[selected.id].map((color, i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 rounded-full shadow-sm border-2 border-white"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                  style notes
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {tags[selected.id].map((tag, i) => (
+                    <span
+                      key={i}
+                      className="text-xs bg-pink-50 text-pink-400 px-3 py-1 rounded-full border border-pink-100"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Button */}
+              <button className="mt-2 w-full bg-pink-400 hover:bg-pink-500 transition-colors text-white text-sm font-semibold py-3 rounded-2xl">
+                style my outfit →
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
