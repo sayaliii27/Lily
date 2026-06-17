@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLily } from "../LilyContext";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const moods = [
   { id: "boho", emoji: "🌺", label: "Boho" },
@@ -39,6 +43,17 @@ function CaptionLab() {
   const [captions, setCaptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
+  const location = useLocation();
+  const isFlow = new URLSearchParams(location.search).get("flow") === "true";
+
+  const navigate = useNavigate();
+  const { currentLook, updateLook } = useLily();
+
+  useEffect(() => {
+    if (currentLook.mood) {
+      setSelectedMood(currentLook.mood.id);
+    }
+  }, []);
 
   const generateCaptions = async () => {
     if (!selectedMood || !selectedTone || !selectedLength) return;
@@ -106,7 +121,7 @@ Make them feel real and authentic, not generic. Think like a cool girl writing h
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto pb-24">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-700">Caption Lab ✍️</h1>
@@ -116,27 +131,41 @@ Make them feel real and authentic, not generic. Think like a cool girl writing h
       </div>
 
       {/* Mood Selector */}
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">
-          Your Outfit Vibe
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {moods.map((mood) => (
-            <button
-              key={mood.id}
-              onClick={() => setSelectedMood(mood.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-200
-                ${
-                  selectedMood === mood.id
-                    ? "bg-pink-400 text-white border-pink-400"
-                    : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"
-                }`}
-            >
-              {mood.emoji} {mood.label}
-            </button>
-          ))}
+      {!isFlow && (
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+            Your Outfit Vibe
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {moods.map((mood) => (
+              <button
+                key={mood.id}
+                onClick={() => setSelectedMood(mood.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-200
+            ${
+              selectedMood === mood.id
+                ? "bg-pink-400 text-white border-pink-400"
+                : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"
+            }`}
+              >
+                {mood.emoji} {mood.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {isFlow && currentLook.mood && (
+        <div className="flex items-center gap-3 mb-6 bg-white px-4 py-3 rounded-2xl border border-pink-100 shadow-sm w-fit">
+          <span className="text-2xl">{currentLook.mood.emoji}</span>
+          <div>
+            <p className="text-sm font-semibold text-gray-700">
+              {currentLook.mood.label}
+            </p>
+            <p className="text-xs text-gray-400">your vibe today</p>
+          </div>
+        </div>
+      )}
 
       {/* Tone Selector */}
       <div className="mb-6">
@@ -215,6 +244,26 @@ Make them feel real and authentic, not generic. Think like a cool girl writing h
           ))}
         </div>
       )}
+
+      {/* Flow Navigation */}
+      <div className="fixed bottom-6 right-6 flex gap-3">
+        <button
+          onClick={() => navigate("/style-planner")}
+          className="bg-white text-pink-400 text-sm font-medium px-5 py-3 rounded-2xl border border-pink-200 hover:bg-pink-50 transition-colors shadow-sm"
+        >
+          skip →
+        </button>
+        <button
+          onClick={() => {
+            if (captions.length > 0)
+              updateLook({ caption: captions[0].caption });
+            navigate("/style-planner");
+          }}
+          className="bg-pink-400 hover:bg-pink-500 text-white text-sm font-semibold px-5 py-3 rounded-2xl transition-colors shadow-sm"
+        >
+          next → planner
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useLily } from "../LilyContext";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const moods = [
   { id: "boho", emoji: "🌺", label: "Boho" },
@@ -19,8 +23,6 @@ const moods = [
   { id: "brunch", emoji: "🛍️", label: "Brunch" },
 ];
 
-// 🌸 Add your outfit image paths here later!
-// Example: { id: "boho-1", mood: "boho", url: "/outfits/boho1.jpg", label: "Boho Look 1" }
 const stockOutfits = [];
 
 function OutfitStudio() {
@@ -30,6 +32,17 @@ function OutfitStudio() {
   const [selectedOutfit, setSelectedOutfit] = useState(null);
   const [activeTab, setActiveTab] = useState("stock");
   const [uploading, setUploading] = useState(false);
+  const location = useLocation();
+  const isFlow = new URLSearchParams(location.search).get("flow") === "true";
+
+  const navigate = useNavigate();
+  const { currentLook, updateLook } = useLily();
+
+  useEffect(() => {
+    if (currentLook.mood) {
+      setSelectedMood(currentLook.mood.id);
+    }
+  }, []);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -68,7 +81,7 @@ function OutfitStudio() {
     : stockOutfits;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto pb-24">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-700">Outfit Studio 👗</h1>
@@ -101,36 +114,37 @@ function OutfitStudio() {
       {/* Style Inspo Tab */}
       {activeTab === "stock" && (
         <div>
-          {/* Mood Pills */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button
-              onClick={() => setSelectedMood(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all
-                ${!selectedMood ? "bg-pink-400 text-white border-pink-400" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"}`}
-            >
-              All
-            </button>
-            {moods.map((mood) => (
+          {!isFlow && (
+            <div className="flex flex-wrap gap-2 mb-6">
               <button
-                key={mood.id}
-                onClick={() => setSelectedMood(mood.id)}
+                onClick={() => setSelectedMood(null)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all
-                  ${selectedMood === mood.id ? "bg-pink-400 text-white border-pink-400" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"}`}
+        ${!selectedMood ? "bg-pink-400 text-white border-pink-400" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"}`}
               >
-                {mood.emoji} {mood.label}
+                All
               </button>
-            ))}
-          </div>
+              {moods.map((mood) => (
+                <button
+                  key={mood.id}
+                  onClick={() => setSelectedMood(mood.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all
+          ${selectedMood === mood.id ? "bg-pink-400 text-white border-pink-400" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"}`}
+                >
+                  {mood.emoji} {mood.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {filteredOutfits.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-dashed border-pink-200">
-              <p className="text-4xl mb-3">👗</p>
-              <p className="text-gray-400 text-sm font-medium">
-                Outfit pics coming soon!
-              </p>
-              <p className="text-gray-300 text-xs mt-1">
-                You'll add your own flat lay photos here 🌸
-              </p>
+          {isFlow && currentLook.mood && (
+            <div className="flex items-center gap-3 mb-6 bg-white px-4 py-3 rounded-2xl border border-pink-100 shadow-sm w-fit">
+              <span className="text-2xl">{currentLook.mood.emoji}</span>
+              <div>
+                <p className="text-sm font-semibold text-gray-700">
+                  {currentLook.mood.label}
+                </p>
+                <p className="text-xs text-gray-400">your vibe today</p>
+              </div>
             </div>
           )}
 
@@ -281,6 +295,25 @@ function OutfitStudio() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Flow Navigation */}
+      <div className="fixed bottom-6 right-6 flex gap-3">
+        <button
+          onClick={() => navigate("/caption-lab?flow=true")}
+          className="bg-white text-pink-400 text-sm font-medium px-5 py-3 rounded-2xl border border-pink-200 hover:bg-pink-50 transition-colors shadow-sm"
+        >
+          skip →
+        </button>
+        <button
+          onClick={() => {
+            if (selectedOutfit) updateLook({ outfit: selectedOutfit });
+            navigate("/caption-lab?flow=true");
+          }}
+          className="bg-pink-400 hover:bg-pink-500 text-white text-sm font-semibold px-5 py-3 rounded-2xl transition-colors shadow-sm"
+        >
+          next → captions
+        </button>
+      </div>
     </div>
   );
 }

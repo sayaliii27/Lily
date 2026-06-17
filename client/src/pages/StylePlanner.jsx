@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { useLily } from "../LilyContext";
 
 const occasions = [
   "🎓 College",
@@ -21,6 +22,9 @@ function StylePlanner() {
   const [occasion, setOccasion] = useState("");
   const [note, setNote] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const { currentLook, updateLook, saveCompleteLook } = useLily();
 
   const dateKey = selectedDate ? selectedDate.toDateString() : null;
 
@@ -48,6 +52,13 @@ function StylePlanner() {
     });
   };
 
+  const handleSaveCompleteLook = () => {
+    updateLook({ date: selectedDate, occasion });
+    saveCompleteLook();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
   const tileContent = ({ date }) => {
     const key = date.toDateString();
     if (plans[key]) {
@@ -59,7 +70,7 @@ function StylePlanner() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-24">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-700">Style Planner 🗓️</h1>
@@ -67,6 +78,27 @@ function StylePlanner() {
           Plan your outfits for upcoming events
         </p>
       </div>
+
+      {/* Current Look Summary */}
+      {(currentLook.mood || currentLook.caption) && (
+        <div className="bg-white rounded-3xl p-5 border border-pink-100 shadow-sm mb-6">
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 font-medium">
+            Your Look Today
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {currentLook.mood && (
+              <span className="bg-pink-50 text-pink-400 px-3 py-1.5 rounded-full text-sm border border-pink-100">
+                {currentLook.mood.emoji} {currentLook.mood.label}
+              </span>
+            )}
+            {currentLook.caption && (
+              <span className="bg-pink-50 text-pink-400 px-3 py-1.5 rounded-full text-sm border border-pink-100 max-w-xs truncate">
+                ✍️ {currentLook.caption}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-6">
         {/* Calendar */}
@@ -97,7 +129,6 @@ function StylePlanner() {
                 📅 {selectedDate.toDateString()}
               </p>
 
-              {/* Occasion */}
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
                 Occasion
               </p>
@@ -114,7 +145,6 @@ function StylePlanner() {
                 ))}
               </div>
 
-              {/* Note */}
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
                 Outfit Note
               </p>
@@ -182,6 +212,22 @@ function StylePlanner() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Save Complete Look */}
+      <div className="fixed bottom-6 right-6 flex gap-3">
+        {saved && (
+          <div className="bg-green-50 text-green-500 text-sm font-medium px-5 py-3 rounded-2xl border border-green-100 shadow-sm">
+            look saved! 🌸
+          </div>
+        )}
+        <button
+          onClick={handleSaveCompleteLook}
+          disabled={!currentLook.mood}
+          className="bg-pink-400 hover:bg-pink-500 disabled:bg-pink-200 text-white text-sm font-semibold px-5 py-3 rounded-2xl transition-colors shadow-sm"
+        >
+          💾 save complete look
+        </button>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useLily } from "../LilyContext";
 
 const moods = [
   {
@@ -163,6 +165,8 @@ const tags = {
 function TodaysVibe() {
   const [selectedMood, setSelectedMood] = useState(null);
   const [hoveredMood, setHoveredMood] = useState(null);
+  const navigate = useNavigate();
+  const { updateLook } = useLily();
 
   const selected = moods.find((m) => m.id === selectedMood);
 
@@ -265,8 +269,23 @@ function TodaysVibe() {
               </div>
 
               {/* Button */}
-              <button className="mt-2 w-full bg-pink-400 hover:bg-pink-500 transition-colors text-white text-sm font-semibold py-3 rounded-2xl">
+              <button
+                onClick={() => {
+                  updateLook({ mood: selected });
+                  navigate("/outfit-studio?flow=true");
+                }}
+                className="mt-2 w-full bg-pink-400 hover:bg-pink-500 transition-colors text-white text-sm font-semibold py-3 rounded-2xl"
+              >
                 style my outfit →
+              </button>
+              <button
+                onClick={() => {
+                  updateLook({ mood: selected });
+                  navigate("/caption-lab?flow=true");
+                }}
+                className="mt-2 w-full bg-white hover:bg-pink-50 transition-colors text-pink-400 text-sm font-medium py-2 rounded-2xl border border-pink-200"
+              >
+                skip to captions →
               </button>
             </motion.div>
           )}
